@@ -2,7 +2,7 @@
 #
 # Builds an image used for testing a go wrapper around kudus c++ client api
 #
-FROM apache/kudu:latest-stretch as kudu-go-test
+FROM apache/kudu:latest-xenial as kudu-go-test
 
 USER root
 
@@ -11,10 +11,10 @@ RUN apt-get install -y ca-certificates wget build-essential
 RUN rm -rf /var/lib/apt/lists/*
 
 # install kudu client lib
-COPY --from=apache/kudu:build-latest-stretch \
+COPY --from=apache/kudu:build-latest-xenial \
     /usr/local/lib/libkudu* \
     /usr/local/lib/
-COPY --from=apache/kudu:build-latest-stretch \
+COPY --from=apache/kudu:build-latest-xenial \
     /usr/local/include/kudu \
     /usr/local/include/kudu
 # as docker does not preserve symlinks but copies files instead
@@ -34,13 +34,12 @@ RUN mkdir -p /tmp/golang \
 RUN echo 'export PATH=$PATH:/opt/kudu/bin' >> /etc/profile.d/kudu.sh && . /etc/profile
 
 # copy project and prepare entrypoint
-RUN mkdir -p /root/go/src/kuduWrapper
-COPY . /root/go/src/kuduWrapper/
-WORKDIR /root/go/src/kuduWrapper
-COPY container/go-kudu-wrapper-entry.sh .
+RUN mkdir -p /root/go/src/gokudugo
+COPY . /root/go/src/gokudugo/
 
 LABEL descriptoion="Image contains Apache Kudu binaries and c++ client libs as well as a golang wrapper around these"
 LABEL maintainer = "ptrc-n"
 
-ENTRYPOINT ["/root/go/src/kuduWrapper/go-kudu-wrapper-entry.sh"]
+WORKDIR /root/go/src/gokudugo
+ENTRYPOINT ["/root/go/src/gokudugo/container/go-kudu-wrapper-entry.sh"]
 
