@@ -157,3 +157,15 @@ func InsertDataTestTable(masterServerAddr string, names []string, coins []int) e
 												  &cCoins[0],
 												  C.int(len(names))))
 }
+
+// CountData (rows) of table <tableName> managed by <masterServerAddr>
+func CountData(masterServerAddr string, tableName string) (int32, error) {
+	cMasterServerAddr := C.CString(masterServerAddr)
+	defer C.free(unsafe.Pointer(cMasterServerAddr))
+	cTableName := C.CString(tableName)
+	defer C.free(unsafe.Pointer(cTableName))
+
+	var nRows int32 = 0;
+	err := statusToErr(C.Kudu_CountData(cMasterServerAddr, cTableName, (*C.int)(&nRows)))
+	return nRows, err
+}

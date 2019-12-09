@@ -82,6 +82,9 @@ extern "C" {
                                            const char** names,
                                            int32_t* coins,
                                            int32_t nRows);
+    C_KuduStatus* Kudu_CountData(const char* master_server_addr,
+                                 const char* table_name,
+                                 int* nRows);
 
 
 #ifdef __cplusplus

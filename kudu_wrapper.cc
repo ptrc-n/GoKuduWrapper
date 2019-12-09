@@ -12,6 +12,8 @@ using kudu::client::KuduClient;
 using kudu::client::KuduTable;
 using kudu::client::KuduSchema;
 using kudu::client::KuduSession;
+using kudu::client::KuduScanner;
+using kudu::client::KuduScanBatch;
 using kudu::client::KuduColumnSchema;
 using kudu::client::KuduSchemaBuilder;
 using kudu::client::KuduTableCreator;
@@ -170,6 +172,44 @@ extern "C" {
         }
 
         return MakeStatus(session->Flush());
+    }
+
+    C_KuduStatus* Kudu_CountData(const char* master_server_addr,
+                                 const char* table_name,
+                                 int* nRows) {
+        shared_ptr<KuduClient> client;
+        Status s = CreateClient(
+            std::string(master_server_addr), 
+            &client
+        );
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+
+        shared_ptr<KuduTable> table;
+        s = client->OpenTable(std::string(table_name), &table);
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+
+        KuduScanner scanner (table.get());
+        s = scanner.Open();
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+        KuduScanBatch batch;
+        int rows = 0;
+        while(scanner.HasMoreRows()) {
+            s = scanner.NextBatch(&batch);
+            if (!s.ok()) {
+                return MakeStatus(s);
+            }
+            for(KuduScanBatch::const_iterator it = batch.begin(); it != batch.end(); it++) {
+                rows++;
+            }
+        }
+        *nRows = rows;
+        return MakeStatus(s);
     }
 
 }

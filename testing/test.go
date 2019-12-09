@@ -16,8 +16,8 @@ func main() {
 	fmt.Println(err)
 	err = kudu.DoesTableExist("127.0.0.1:7051", "TestTable")
 	fmt.Println(err)
-	err = kudu.DeleteTable("127.0.0.1:7051", "TestTable")
-	fmt.Println(err)
+	// err := kudu.DeleteTable("127.0.0.1:7051", "TestTable")
+	// fmt.Println(err)
 
 	fmt.Println(time.Now().String())
 	fmt.Println("-->Generating rnd Datasets")
@@ -27,10 +27,16 @@ func main() {
 		names[i] = strconv.Itoa(rand.Int())
 		coins[i] = rand.Int()
 	}
-	
+
 	fmt.Println("-->Starting Insert")
 	fmt.Println(time.Now().String())
 	kudu.InsertDataTestTable("127.0.0.1:7051", names, coins)
 	fmt.Println("Finished!")
 	fmt.Println(time.Now().String())
+	nRows, err := kudu.CountData("127.0.0.1:7051", "TestTable")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(nRows)
 }
