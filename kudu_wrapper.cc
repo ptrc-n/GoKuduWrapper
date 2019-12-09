@@ -11,6 +11,7 @@ using kudu::client::KuduClientBuilder;
 using kudu::client::KuduClient;
 using kudu::client::KuduTable;
 using kudu::client::KuduSchema;
+using kudu::client::KuduSession;
 using kudu::client::KuduColumnSchema;
 using kudu::client::KuduSchemaBuilder;
 using kudu::client::KuduTableCreator;
@@ -131,4 +132,44 @@ extern "C" {
         delete table_creator;
         return MakeStatus(s);
     }
+
+    C_KuduStatus* Kudu_InsertDataTestTable(const char* master_server_addr, 
+                                           const char** names,
+                                           int32_t* coins,
+                                           int32_t nRows) {
+        shared_ptr<KuduClient> client;
+        Status s = CreateClient(
+            std::string(master_server_addr), 
+            &client
+        );
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+
+        shared_ptr<KuduTable> table;
+        s = client->OpenTable("TestTable", &table);
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+
+        shared_ptr<KuduSession> session = table->client()->NewSession();
+        s = session->SetFlushMode(KuduSession::MANUAL_FLUSH);
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+
+        for (int i = 0; i < nRows; i++) {
+            auto insert = table->NewInsert();
+            auto row = insert->mutable_row();
+            row->SetString("name", std::string(names[i]));
+            row->SetInt32("coins", coins[i]);
+            s = session->Apply(insert);
+            if (!s.ok()) {
+                return MakeStatus(s);
+            }
+        }
+
+        return MakeStatus(session->Flush());
+    }
+
 }

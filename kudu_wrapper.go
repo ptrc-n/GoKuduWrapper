@@ -135,3 +135,25 @@ func CreateTableHashed(masterServerAddr string, tableName string,
 		C.int(primaryKeyCols), &cPartitionCols[0], 
 		C.int(len(cPartitionCols)), C.int(nBuckets), C.int(nReplicas)))
 }
+
+// InsertDataTestTable inserts Data into TestTable at master server at <masterServerAddr>
+func InsertDataTestTable(masterServerAddr string, names []string, coins []int) error {
+	cMasterServerAddr := C.CString(masterServerAddr)
+	defer C.free(unsafe.Pointer(cMasterServerAddr))
+
+	cNames := make([]*C.char, len(names))
+	for i, name := range names {
+		cNames[i] = C.CString(name)
+		defer C.free(unsafe.Pointer(cNames[i]))
+	}
+
+	cCoins := make([]C.int, len(coins))
+	for i, coin := range(coins) {
+		cCoins[i] = C.int(coin)
+	}
+
+	return statusToErr(C.Kudu_InsertDataTestTable(cMasterServerAddr, 
+												  &cNames[0], 
+												  &cCoins[0],
+												  C.int(len(names))))
+}

@@ -78,6 +78,10 @@ extern "C" {
                                    const char** col_names, C_DataType* type, int n_cols,
                                    int n_keys, const char** partition_cols, 
                                    int n_partitions, int n_buckets, int n_replicas);
+    C_KuduStatus* Kudu_InsertDataTestTable(const char* master_server_addr, 
+                                           const char** names,
+                                           int32_t* coins,
+                                           int32_t nRows);
 
 
 #ifdef __cplusplus
