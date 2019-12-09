@@ -14,7 +14,7 @@ import (
 // var Default = Build
 
 func checkDockerDaemonRunning() error {
-	out, err := exec.Command("docker", "image", "ls").CombinedOutput()
+	out, err := exec.Command("sudo", "docker", "image", "ls").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
@@ -28,7 +28,7 @@ func PrepareKuduImage() error {
 		return err
 	}
 	// Check Kudu Image existing
-	out, err := exec.Command("docker", "inspect", "--type=image", "apache/kudu:latest-stretch").CombinedOutput()
+	out, err := exec.Command("sudo", "docker", "inspect", "--type=image", "apache/kudu:latest-xenial").CombinedOutput()
 	if err == nil {
 		return errors.New("Kudu Image does already exist, nothing to be done!")
 	}
@@ -38,10 +38,11 @@ func PrepareKuduImage() error {
 		return errors.New(string(out))
 	}
 	// Build Kudu Image
-	cmd := exec.Command("usr/bin/bash", "docker/docker-build.sh")
+	exec.Command("cd", "kudu").CombinedOutput()
+	cmd := exec.Command("sudo", "/usr/bin/bash", "docker/docker-build.sh")
 	cmd.Env = append(
 		os.Environ(),
-		"BASES=debian:stretch",
+		"BASES=ubuntu:xenial",
 		"TARGETS=build,kudu",
 	)
 	cmd.Dir = "./kudu"
@@ -60,17 +61,17 @@ func BuildTestImage() error {
 		return err
 	}
 	// Check Test Image existing
-	out, err := exec.Command("docker", "inspect", "--type=image", "ptrc-n/go-kudu-wrapper:test").CombinedOutput()
+	out, err := exec.Command("sudo", "docker", "inspect", "--type=image", "ptrc-n/go-kudu-wrapper:test").CombinedOutput()
 	if err == nil {
 		return errors.New("Image does already exist, use ForceBuildTestImage if thats what you want")
 	}
 	// Check Kudu Image existing
-	out, err = exec.Command("docker", "inspect", "--type=image", "apache/kudu:latest-stretch").CombinedOutput()
+	out, err = exec.Command("sudo", "docker", "inspect", "--type=image", "apache/kudu:latest-xenial").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
 	// Build Wrapper Test Image
-	out, err = exec.Command("docker", "build", "--tag=ptrc-n/go-kudu-wrapper:test", "-f", "container/Dockerfile", ".").CombinedOutput()
+	out, err = exec.Command("sudo", "docker", "build", "--tag=ptrc-n/go-kudu-wrapper:test", "-f", "container/Dockerfile", ".").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
@@ -85,12 +86,12 @@ func ForceBuildTestImage() error {
 		return err
 	}
 	// Check Kudu Image existing
-	out, err := exec.Command("docker", "inspect", "--type=image", "apache/kudu:latest-stretch").CombinedOutput()
+	out, err := exec.Command("sudo", "docker", "inspect", "--type=image", "apache/kudu:latest-xenial").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
 	// Build Wrapper Test Image
-	out, err = exec.Command("docker", "build", "--tag=ptrc-n/go-kudu-wrapper:test", "-f", "container/Dockerfile", ".").CombinedOutput()
+	out, err = exec.Command("sudo", "docker", "build", "--tag=ptrc-n/go-kudu-wrapper:test", "-f", "container/Dockerfile", ".").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
@@ -105,11 +106,11 @@ func RunTestImage() error {
 		return err
 	}
 	// Check Test Image existing
-	out, err := exec.Command("docker", "inspect", "--type=image", "ptrc-n/go-kudu-wrapper:test").CombinedOutput()
+	out, err := exec.Command("sudo", "docker", "inspect", "--type=image", "ptrc-n/go-kudu-wrapper:test").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
-	out, err = exec.Command("docker", "run", "-it", "ptrc-n/go-kudu-wrapper:test", "tests").CombinedOutput()
+	out, err = exec.Command("sudo", "docker", "run", "-it", "ptrc-n/go-kudu-wrapper:test", "tests").CombinedOutput()
 	if err != nil {
 		return errors.New(string(out))
 	}
