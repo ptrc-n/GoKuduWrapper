@@ -80,6 +80,19 @@ extern "C" {
         return MakeStatus(s);
     }
 
+    C_KuduStatus* Kudu_DeleteTable(const char* master_server_addr, 
+                                   const char* table_name) {
+        shared_ptr<KuduClient> client;
+        Status s = CreateClient(
+            std::string(master_server_addr),
+            &client
+        );
+        if (!s.ok()) {
+            return MakeStatus(s);
+        }
+        return MakeStatus(client->DeleteTable(std::string(table_name)));
+    }
+
     C_KuduStatus* Kudu_CreateTable(const char* master_server_addr, const char* table_name,
                                    const char** col_names, C_DataType* type, int n_cols,
                                    int n_keys, const char** partition_cols, 
@@ -115,6 +128,7 @@ extern "C" {
             .add_hash_partitions(ArrayOfCStringToVec(partition_cols, n_partitions), n_buckets)
             .num_replicas(n_replicas)
             .Create();
+        delete table_creator;
         return MakeStatus(s);
     }
 }

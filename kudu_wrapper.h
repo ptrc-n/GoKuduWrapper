@@ -72,6 +72,8 @@ extern "C" {
 
     C_KuduStatus* Kudu_DoesTableExist(const char* master_server_add, 
                                       const char* table_name);
+    C_KuduStatus* Kudu_DeleteTable(const char* master_server_addr, 
+                                   const char* table_name);
     C_KuduStatus* Kudu_CreateTable(const char* master_server_addr, const char* table_name,
                                    const char** col_names, C_DataType* type, int n_cols,
                                    int n_keys, const char** partition_cols, 

@@ -92,6 +92,16 @@ func DoesTableExist(masterServerAddr string, tableName string) error {
 	return statusToErr(C.Kudu_DoesTableExist(cMasterServerAddr, cTableName))
 }
 
+// DeleteTable with <tableName> managed by master server at <masterServerAddr>
+func DeleteTable(masterServerAddr string, tableName string) error {
+	cMasterServerAddr := C.CString(masterServerAddr)
+	defer C.free(unsafe.Pointer(cMasterServerAddr))
+	cTableName := C.CString(tableName)
+	defer C.free(unsafe.Pointer(cTableName))
+
+	return statusToErr(C.Kudu_DeleteTable(cMasterServerAddr, cTableName))
+}
+
 // CreateTableHashed managed by kudu master at <masterServerAddr>.
 // <primaryKeyCols> specifies the number of primary key columns, 
 // which must be the first <primaryKeyCols> columns
@@ -101,7 +111,7 @@ func CreateTableHashed(masterServerAddr string, tableName string,
 
 	cMasterServerAddr := C.CString(masterServerAddr)
 	defer C.free(unsafe.Pointer(cMasterServerAddr))
-	cTableName := C.CString(masterServerAddr)
+	cTableName := C.CString(tableName)
 	defer C.free(unsafe.Pointer(cTableName))
 
 	cColNames := make([]*C.char, len(colNames))
@@ -117,7 +127,6 @@ func CreateTableHashed(masterServerAddr string, tableName string,
 	cDataTypes := make([]C.C_DataType, len(colTypes))
 	for i, t := range colTypes {
 		cDataTypes[i] = C.C_DataType(t)
-		//defer C.free(unsafe.Pointer(&cDataTypes[i]))
 	}
 
 	return statusToErr(C.Kudu_CreateTable(
